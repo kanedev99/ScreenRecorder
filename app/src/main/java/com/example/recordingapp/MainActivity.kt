@@ -7,6 +7,7 @@ import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 import android.media.projection.MediaProjectionManager
 import android.os.Bundle
+import android.util.Log
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -38,7 +39,7 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        mApps = packageManager.getInstalledApplications(PackageManager.GET_META_DATA).toMutableList()
+        mApps = loadApps()
         mAdapter = AppListAdapter(this, mApps!!)
         val listViewApps = findViewById<ListView>(R.id.app_list)
         listViewApps.adapter = mAdapter
@@ -76,6 +77,27 @@ class MainActivity : AppCompatActivity() {
             startRecording()
         }
     }
+
+    private fun loadApps(): MutableList<ApplicationInfo> {
+        val apps: MutableList<ApplicationInfo> = mutableListOf()
+
+        val pm: PackageManager = packageManager
+        val packs = pm.getInstalledApplications(PackageManager.GET_META_DATA)
+
+        for (pack in packs) {
+            if (!isSystemPackage(pack) ) {
+                Log.d("Kane", "APP NAME IS: ${pack.loadLabel(packageManager)} ")
+                apps.add(pack)
+            }
+        }
+
+        return apps
+    }
+
+    private fun isSystemPackage(packageInfo: ApplicationInfo): Boolean {
+        return (packageInfo.flags and ApplicationInfo.FLAG_SYSTEM) != 0
+    }
+
 
     fun enableStartButton(value: Boolean) {
         mButtonStart?.isEnabled = value
